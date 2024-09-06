@@ -6,6 +6,8 @@ import { Usuarios } from './entity/usuarios.entity';
 import { AuthService } from './auth/auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MulterModule } from '@nestjs/platform-express';
+import { saveImagesToStorage } from './helpers/image-storage';
 
 @Module({
   //importamos la entidad para trabajar con ella en nuestro modulo
@@ -23,6 +25,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
      
     },
   }),
+  //usamoselmodulo de multer y configuramos el storage y el destino donde sera alojado las imagenes subidas
+  MulterModule.register({
+    dest: './uploads',
+    fileFilter: saveImagesToStorage('avatar').fileFilter,
+    storage: saveImagesToStorage('avatar').storage
+  })
 ],
  
   controllers: [UsuariosController],

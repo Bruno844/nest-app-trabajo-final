@@ -6,20 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthService } from './usuarios/auth/auth.service';
 import { JwtMiddleware } from './usuarios/auth/middlewares/jwt/jwt.middleware';
+import { db } from './usuarios/config/database-config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DATABASE,
-      entities: [],
-      autoLoadEntities: true,//carga las entidades que vayamos creando.
-      synchronize: true,//realiza las migraciones de las tablas,las sincroniza
-    }),
+    TypeOrmModule.forRoot(db),
     UsuariosModule
   ],
   controllers: [AppController],

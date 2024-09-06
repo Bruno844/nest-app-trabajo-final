@@ -1,7 +1,8 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Param, Patch, Post, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { Response } from 'express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -19,6 +20,20 @@ export class UsuariosController {
 
     @Post('/auth/login')
     async login(){}
+
+
+
+    @Patch(':id')
+    @UseInterceptors(FilesInterceptor('files'))
+    async update(
+        @Param('id') id:number,
+        @Body() user: Partial<UsuarioDto>,
+        @UploadedFiles() files: Express.Multer.File[],
+        @Res() res: Response
+    ){
+        const result = await this.usuarioService.updateUser(id, user, files);
+        res.status(HttpStatus.OK).json({ok: true,result, msg: 'approved'})
+    }
 
 
 

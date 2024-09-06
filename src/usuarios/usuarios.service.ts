@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from './entity/usuarios.entity';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { AuthService } from './auth/auth.service';
 
@@ -56,6 +56,35 @@ export class UsuariosService {
             console.error(error);
             throw new HttpException(error.message, error.status);
         }
+    }
+
+    async updateUser(
+        id: number,
+        user: Partial<UsuarioDto>,
+        files: Express.Multer.File[]
+    ) {
+
+        try {
+            //comprobamos que al menos se subio 1 archivo, si es asi, le asignamos a ña 1ra posicion con su nombre
+            if(files.length > 0){
+                user.avatar = files[0].filename;
+            }
+            const oldUser = await this.getUsuarioById(id);
+
+            const mergeUser = await this.usuario.merge(oldUser, user)
+
+            const result = await this.usuario.save(mergeUser);
+
+            return result;
+            
+        } catch (err) {
+            console.error(err);
+            if(err instanceof QueryFailedError)
+                throw new HttpException(`${err.name} ${err.driverError}`, 404);
+            throw new HttpException(err.message,err.status);
+        }
+
+
     }
 
 }

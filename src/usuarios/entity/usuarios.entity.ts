@@ -38,4 +38,7 @@ export class Usuarios {
     })
     isActive:boolean;
 
+    @Column({type: 'varchar',nullable: false,length:255})
+    avatar:string;
+
 }

@@ -1,16 +1,29 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Usuarios } from './entity/usuarios.entity';
 import { QueryFailedError, Repository } from 'typeorm';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { AuthService } from './auth/auth.service';
+import { LoginUsuarioDto } from './dto/login.usuarios.dto';
+import * as bcrypt from 'bcrypt';
+import { JwtPayload } from './auth/interfaces/jwt-payload.interface';
+import { JwtService } from '@nestjs/jwt';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+
 
 @Injectable()
 export class UsuariosService {
 
     constructor(
-        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>,private authService:AuthService
+        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>,private authService:AuthService,
+        private jwtService: JwtService
     ){}
+
+
+    private getJwtToken(payload: JwtPayload){
+        const token = this.jwtService.sign(payload);
+        return token;
+    }
 
 
     //funcion para registrar un usuario
@@ -34,6 +47,67 @@ export class UsuariosService {
             
         }
     }
+
+
+    //funcion para iniciar sesion del usuario
+    async loginUser(loginUsuarioDto: LoginUsuarioDto) {
+
+        const {password, email} = loginUsuarioDto;
+
+        //obtenemos el usuario por su email y pass
+        const user = await this.usuario.findOne({
+            where: {email},
+            select: {email:true, password: true, id: true}
+        })
+
+
+        //nos fijamos si trae o no el usuario
+        if(!user){
+            throw new UnauthorizedException('credenciales no validas')
+        }
+
+        //comparamos la contra del usuario con la que esta en la base de datos
+        if(!bcrypt.compareSync(password, user.password)){
+            throw new UnauthorizedException('password no valida')
+        }
+
+        //retorna si todo sale ok
+        return {
+            ...user,
+            token: this.getJwtToken({...user})
+        }
+
+    }
+
+    
+
+
+    //*------------------SECCION CRUD--------------------------------//
+
+
+
+    //funcion para retornar todos los usuarios
+    async getAllUsuarios(paginationDto: PaginationDto){
+
+        const {limit = 5, offset = 0} = paginationDto
+
+        try {
+
+            const users = await this.usuario.find({
+                take: limit,
+                skip: offset
+            })
+
+            return users;
+            
+        } catch (error) {
+            console.log(error)
+            const httpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+            throw new HttpException('no trajo los datos necesarios', httpStatus)
+        }
+    }
+
+
 
 
     //funcion para encontrar un usuario por el id
@@ -85,6 +159,14 @@ export class UsuariosService {
         }
 
 
+    }
+
+
+    //funcion para eliminar un usuario
+    async removeUsuario(id:string) {
+        const userId = await this.getUsuarioById(+id);
+
+        return await this.usuario.remove(userId);  
     }
 
 }

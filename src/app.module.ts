@@ -6,16 +6,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthService } from './usuarios/auth/auth.service';
 import { JwtMiddleware } from './usuarios/auth/middlewares/jwt/jwt.middleware';
-import { db } from './usuarios/config/database-config';
+import { db } from './config/database-config';
+import { CommonModule } from './common/common.module';
+import path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true}),
     TypeOrmModule.forRoot(db),
-    UsuariosModule
+    UsuariosModule,
+    CommonModule,
+  
   ],
-  controllers: [AppController],
-  providers: [AppService, AuthService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule implements NestModule {
 
@@ -29,6 +33,10 @@ export class AppModule implements NestModule {
       {
         path: '/usuarios/auth/login',
         method: RequestMethod.POST
+      },
+      {
+        path: '/usuarios/all',
+        method: RequestMethod.GET
       }
     ).forRoutes('');
   }

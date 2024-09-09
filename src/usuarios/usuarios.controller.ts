@@ -1,8 +1,11 @@
-import { Body, Controller, HttpStatus, Param, Patch, Post, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { Response } from 'express';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { LoginUsuarioDto } from './dto/login.usuarios.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { JwtMiddleware } from './auth/middlewares/jwt/jwt.middleware';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -19,9 +22,25 @@ export class UsuariosController {
     }
 
     @Post('/auth/login')
-    async login(){}
+    login(@Body() loginusuarioDto: LoginUsuarioDto ){
+        return this.usuarioService.loginUser(loginusuarioDto)
+    }
 
+    @Get('/all')
+    allUsuarios(@Query() paginationDto: PaginationDto){
+        return this.usuarioService.getAllUsuarios(paginationDto)
+    }
 
+    @Get(':id')
+    usuarioById(@Param('id', ParseIntPipe) id: string  ){
+        return this.usuarioService.getUsuarioById(+id)
+    }
+
+    @Delete(':id')
+    deleteUsuario(@Param('id', ParseIntPipe) id:string){
+        return this.usuarioService.removeUsuario(id)
+
+    }
 
     @Patch(':id')
     @UseInterceptors(FilesInterceptor('files'))

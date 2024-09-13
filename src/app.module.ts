@@ -8,6 +8,7 @@ import { AuthService } from './usuarios/auth/auth.service';
 import { JwtMiddleware } from './usuarios/auth/middlewares/jwt/jwt.middleware';
 import { db } from './config/database-config';
 import { CommonModule } from './common/common.module';
+import { SocketModule } from './socket/socket.module';
 import path from 'path';
 
 @Module({
@@ -16,6 +17,7 @@ import path from 'path';
     TypeOrmModule.forRoot(db),
     UsuariosModule,
     CommonModule,
+    SocketModule,
   
   ],
   controllers: [],

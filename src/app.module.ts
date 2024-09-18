@@ -9,6 +9,11 @@ import { JwtMiddleware } from './usuarios/auth/middlewares/jwt/jwt.middleware';
 import { db } from './config/database-config';
 import { CommonModule } from './common/common.module';
 import { SocketModule } from './socket/socket.module';
+import { ReservasModule } from './sistema-reserva/reservas/reservas.module';
+import { ParcelasModule } from './sistema-reserva/parcelas/parcelas.module';
+import { DepartamentosModule } from './sistema-reserva/departamentos/departamentos.module';
+import { IngresosModule } from './sistema-reserva/ingresos/ingresos.module';
+import { SistemaReservaModule } from './sistema-reserva/sistema-reserva.module';
 import path from 'path';
 
 @Module({
@@ -18,6 +23,11 @@ import path from 'path';
     UsuariosModule,
     CommonModule,
     SocketModule,
+    ReservasModule,
+    ParcelasModule,
+    DepartamentosModule,
+    IngresosModule,
+    SistemaReservaModule,
   
   ],
   controllers: [],

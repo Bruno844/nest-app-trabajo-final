@@ -1,4 +1,4 @@
-import { IsDate, IsOptional } from "class-validator";
+import { isDate, IsDate, IsDateString, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 import { CreateParcelaDto } from "src/sistema-reserva/parcelas/dto/create-parcela.dto";
 import { UsuarioDto } from "src/usuarios/dto/usuarios.dto";
 
@@ -6,14 +6,18 @@ export class CreateIngresoDto {
 
     id: number;
 
-    @IsDate()
+    // @IsDate({})
+    @IsDateString({strict: false })
     entrada: Date;
 
     @IsOptional()
-    @IsDate()
+    @IsDateString({strict: false})
     salida: Date;
 
-    usuario: UsuarioDto
+    @IsNotEmpty()
+    usuario: UsuarioDto;
 
-    parcela: CreateParcelaDto
+    @IsInt()
+    @IsNotEmpty()
+    parcela: CreateParcelaDto;
 }

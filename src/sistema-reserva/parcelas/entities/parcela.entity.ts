@@ -21,6 +21,19 @@ export class ParcelaEntity {
     })
     nombreParcela: string;
 
+    // @Column({
+    //     type: 'varchar',
+    //     nullable: true,
+    //     length: 50
+    // })
+    // descripcion: string;
+
+    // @Column({
+    //     type: 'int',
+    //     nullable: false
+    // })
+    // precio: number;
+
     @Column({
         type: 'uuid',
         nullable: false,
@@ -45,17 +58,17 @@ export class ParcelaEntity {
     // ingresoUsuario: IngresoEntity;
 
     //*una parcela tiene muchos ingresos, pero vamos a mostrar el id del usuario
-    @ManyToOne(
-        () => IngresoEntity,
-        (ingreso) => ingreso.usuario.id
-    )
-    ingresoCliente: IngresoEntity;
-
     @OneToMany(
-        () => Usuarios,
-        (usuario) => usuario.parcela,
-        {eager: true}
+        () => IngresoEntity,
+        (ingreso) => ingreso.parcela
     )
-    usuario: Usuarios
+    ingreso: IngresoEntity;
+
+    // @ManyToOne(
+    //     () => Usuarios,
+    //     (usuario) => usuario.parcela,
+    //     // {eager: true}
+    // )
+    // usuario: Usuarios
 
 }

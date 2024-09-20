@@ -1,5 +1,6 @@
 //aca creamos el esquema de la base de datos, de nuestras tablas en la base de datos
 
+import { IngresoEntity } from "src/sistema-reserva/ingresos/entities/ingreso.entity";
 import { ParcelaEntity } from "src/sistema-reserva/parcelas/entities/parcela.entity";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
@@ -43,11 +44,11 @@ export class Usuarios {
     avatar:string;
 
 
-   @ManyToOne(
-    () => ParcelaEntity,
-    (parcela) => parcela.usuario,
-    {eager: true}
+   @OneToMany(
+    () => IngresoEntity,
+    (ingreso) => ingreso.usuario,
+    
    )
-   parcela: ParcelaEntity
+   ingreso: ParcelaEntity
 
 }

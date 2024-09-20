@@ -4,6 +4,8 @@ import { ParcelaStatus } from "../entities/parcela.entity";
 
 export class CreateParcelaDto {
 
+    id:number;
+
     @IsNumber()
     @IsUUID(4)
     @IsOptional()

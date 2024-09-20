@@ -10,17 +10,17 @@ export class IngresoEntity {
 
     //cuando la usa
     @Column({ type: 'date', nullable: false })
-    entrada: Date
+    entrada: Date;
     @Column({ type: 'date', nullable: true })
-    salida: Date
+    salida: Date;
 
     //quien ingresa
-    @ManyToOne(() => Usuarios, usuario => usuario.id)
+    @ManyToOne(() => Usuarios, usuario => usuario.ingreso)
     @JoinColumn({name: 'usuarioId'})
     usuario: Usuarios;
     
     //a que parcela
-    @ManyToOne(() => ParcelaEntity, (parcela) => parcela.id)
+    @ManyToOne(() => ParcelaEntity, (parcela) => parcela.ingreso)
     @JoinColumn({name: 'parcelaId'})
     parcela: ParcelaEntity;
 }

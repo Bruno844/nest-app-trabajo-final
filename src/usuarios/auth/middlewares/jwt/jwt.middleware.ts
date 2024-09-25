@@ -11,11 +11,12 @@ export class JwtMiddleware implements NestMiddleware {
     private readonly usuarioService: UsuariosService,
   ){}
 
+  //*con el middleware,interceptamos las peticiones en donde, si no le pasan el token por la authorization, que no los deje avanzar hacia la peticion, es una buena manera de proteger rutas, implementarlo en diferentes escenarios es buena practica,mas robusto el backend
   async use(req: Request, res: Response, next: () => void) {
 
     try {
       //* obtenemos el token desde el header de la peticion
-      const tokenArray: string[] = req.headers['authorization'].split(' ')
+      const tokenArray: string[] = req.headers['authorization'].split(" ")
 
       const decodedToken = await this.authService.verifyJwt(tokenArray[1]);
 

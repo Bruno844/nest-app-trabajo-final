@@ -14,8 +14,12 @@ export class IngresoEntity {
     @Column({ type: 'date', nullable: true })
     salida: Date;
 
+    
+
     //quien ingresa
-    @ManyToOne(() => Usuarios, usuario => usuario.ingreso)
+    @ManyToOne(() => Usuarios, usuario => usuario.ingreso, {
+        cascade: true
+    })
     @JoinColumn({name: 'usuarioId'})
     usuario: Usuarios;
     

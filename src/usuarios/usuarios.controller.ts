@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Res, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Headers, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Res, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { Response } from 'express';
@@ -6,6 +6,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { LoginUsuarioDto } from './dto/login.usuarios.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { JwtMiddleware } from './auth/middlewares/jwt/jwt.middleware';
+import { AuthGuard } from './auth/guard/auth.guard';
+import { Roles } from './auth/decorators/roles.decorator';
+import { RolesGuard } from './auth/guard/roles.guard';
+import { RoleStatusList } from './auth/enum/role.enum';
+import { Auth } from './auth/decorators/auth.decorator';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -31,9 +36,20 @@ export class UsuariosController {
         return this.usuarioService.getAllUsuarios(paginationDto)
     }
 
+
     @Get(':id')
-    usuarioById(@Param('id', ParseIntPipe) id: string  ){
-        return this.usuarioService.getUsuarioById(+id)
+    // @Auth(RoleStatusList.ADMIN)
+    async usuarioById(
+        @Param('id', ParseIntPipe) id: string,
+        @Headers('Authorization') Authorization : string,
+    ){
+        try {
+            // const splitString = token.split('Bearer ');
+            const result = await this.usuarioService.getUsuarioById(+id, Authorization);
+            return result;
+        } catch (error) {
+            return null;
+        }
     }
 
     @Delete(':id')

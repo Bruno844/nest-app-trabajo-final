@@ -2,11 +2,6 @@ import { ReservaEntity } from "src/sistema-reserva/reservas/entities/reserva.ent
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 
-export enum DepartamentoStatus {
-    PENDIENTE = 'PENDIENTE',
-    OCUPADA = 'OCUPADA',
-    LIBRE = 'LIBRE'
-}
 
 
 @Entity('departamentos')
@@ -22,13 +17,19 @@ export class DepartamentoEntity {
     })
     nroDepartamento: number;
 
-
     @Column({
-        type: 'enum',
-        enum: DepartamentoStatus,
-        default: DepartamentoStatus.PENDIENTE
+        type: 'varchar',
+        nullable: true
     })
-    estado: DepartamentoStatus;
+    descripcion: string;
+
+
+    // @Column({
+    //     type: 'enum',
+    //     enum: DepartamentoStatus,
+    //     default: DepartamentoStatus.PENDIENTE
+    // })
+    // estado: DepartamentoStatus;
 
 
     //*un departamento puede tener muchas reservas(maximo 2)

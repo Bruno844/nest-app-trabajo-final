@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateIngresoDto } from './dto/create-ingreso.dto';
 import { UpdateIngresoDto } from './dto/update-ingreso.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -30,16 +30,26 @@ export class IngresosService {
   // cargar el usuario
   // cargar la fecha actual en ingresos/entrada
   // cambiar a true la ocupacion parcela/ocupacion
-  async registerIngreso(usuarioId:number, parcelaId:number):Promise<CreateIngresoDto> {
+  async registerIngreso(usuarioId:number, parcelaId:number,codUnico:string):Promise<CreateIngresoDto> {
     
     try {
+
+      const usuarioCodUnico = await this.usuarioDto.findOne({
+        where: {codigoUnico: codUnico}
+      });
+      if(!usuarioCodUnico) {
+        console.log('ingrese un codigo valido')
+        throw new BadRequestException('ingrese un codigo valido')
+      }
+
+
       const usuario = await this.usuarioDto.findOne({
         where: {id: usuarioId}
       })
       if(!usuario){
         throw new NotFoundException('usuario no encontrado')
       }
-
+      
 
       const parcela = await this.parcelaDto.findOne({
         where: {id: parcelaId}
@@ -114,7 +124,86 @@ export class IngresosService {
   }
 
 
-  async registrarSalida(){
+  async registrarSalida(parcelaId: number,usuarioId:number, ingresoId:number){
+
+
+    try {
+
+      // const ingresoFound = await this.ingresoDto.findOne({
+      //   where:{id: ingresoId}
+      // });
+      // if(!ingresoFound){
+      //   throw new NotFoundException('no hay registros del id de ese ingreso')
+      // }
+  
+      //* consultamos si la parcela id que le pasamos por el body, coincide con la que esta almacenada en la base de datos
+      const parcelaFound = await this.parcelaDto.findOne({
+        where: {id: parcelaId}
+      });
+      if(!parcelaFound){
+        throw new NotFoundException('parcela no encontrada');
+      }
+      if(!parcelaFound.estado){
+        throw new NotFoundException('parcela esta ocupada')
+      }
+  
+  
+      //*buscamos si existe el usuario que le pasamos por body, y en el que esta en la db
+      const usuarioFound = await this.usuarioDto.findOne({
+        where: {id: usuarioId}
+      });
+      if(!usuarioFound){
+        throw new NotFoundException('usuario no encontrado')
+      };
+
+      //*consultamos si existe el ingreso con el id por parametro
+      const ingresoUsuarioId = await this.ingresoDto.findOne({
+        where:{id: ingresoId},
+        relations: ['usuario']
+      });
+      if(!ingresoUsuarioId){
+        throw new NotFoundException('no hay registros del id de ese ingreso')
+      }
+      
+
+      // const salidaUsuario = await this.ingresoDto.delete(ingresoUsuarioId.usuario.id);
+
+      if(ingresoUsuarioId.usuario.id === usuarioId){
+        await this.parcelaService.marcaSalidaParcela(parcelaId);
+        // salidaUsuario.affected = 1
+        return await this.ingresoDto.update(ingresoId, {
+          salida: new Date() 
+        })
+       
+      };
+
+     
+  
+      
+
+     
+
+      // if(usuarioFound.id === usuarioId){
+      //   ingresoFound.usuario.isActive = false;
+      //   const salidaUsuario = await this.ingresoDto.softRemove(usuarioIdIngreso);
+      // }
+   
+      
+  
+     
+      //actualizamos la salida con la fecha actual
+      // const result = await this.ingresoDto.update(parcelaFound, {
+      //   salida: new Date() 
+      // }) 
+      
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException('error a la hora de registrar')
+    }
+
+   
+
+   
     
   }
 

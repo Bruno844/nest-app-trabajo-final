@@ -5,6 +5,8 @@ import { Column, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGene
 export enum ParcelaStatus {
     PENDIENTE = 'PENDIENTE',
     OCUPADA = 'OCUPADA',
+    APROBADA ='APROBADA',
+    DESAPROBADA ='DESAPROBADA',
     LIBRE = 'LIBRE'
 }
 
@@ -34,13 +36,13 @@ export class ParcelaEntity {
     // })
     // precio: number;
 
-    @Column({
-        type: 'uuid',
-        nullable: false,
-        unique: true,
-        generated: 'uuid'
-    })
-    codigoUnico: number;
+    // @Column({
+    //     type: 'uuid',
+    //     nullable: false,
+    //     unique: true,
+    //     generated: 'uuid'
+    // })
+    // codigoUnico: number;
 
     @Column({
         type: 'enum',

@@ -4,7 +4,7 @@ import { UsuariosService } from './usuarios.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Usuarios } from './entity/usuarios.entity';
 import { AuthService } from './auth/auth.service';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 import { saveImagesToStorage } from '../helpers/image-storage';
@@ -24,11 +24,12 @@ import { envs } from '../config';
     dest: './uploads',
     fileFilter: saveImagesToStorage('avatar').fileFilter,
     storage: saveImagesToStorage('avatar').storage
-  })
+  }),
+ 
   ],
 
   controllers: [UsuariosController],
   providers: [UsuariosService, AuthService],
-  exports: [AuthService, UsuariosService]
+  exports: [AuthService,UsuariosService]
 })
 export class UsuariosModule { }

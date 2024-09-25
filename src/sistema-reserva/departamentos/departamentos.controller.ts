@@ -1,34 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } from '@nestjs/common';
 import { DepartamentosService } from './departamentos.service';
 import { CreateDepartamentoDto } from './dto/create-departamento.dto';
 import { UpdateDepartamentoDto } from './dto/update-departamento.dto';
+import { Response } from 'express';
 
 @Controller('departamentos')
 export class DepartamentosController {
   constructor(private readonly departamentosService: DepartamentosService) {}
 
-  @Post()
-  create(@Body() createDepartamentoDto: CreateDepartamentoDto) {
-    return this.departamentosService.create(createDepartamentoDto);
+  @Post('new-depto')
+  async register(
+    @Body() deptoDto: CreateDepartamentoDto,
+    @Res() res: Response
+  ){
+    const result = await this.departamentosService.registrarDepartamento(deptoDto);
+    res.status(HttpStatus.CREATED).json({result, msg: 'creado on exito'});
   }
 
-  @Get()
-  findAll() {
-    return this.departamentosService.findAll();
-  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.departamentosService.findOne(+id);
+  @Patch(':id/update')
+  async update(
+    @Param('id') id: number,
+    @Body() updateDeptoDto: UpdateDepartamentoDto,
+    @Res() response:Response
+  ){
+    const result = await this.departamentosService.editarDepartamento(id, updateDeptoDto);
+    response.status(HttpStatus.OK).json({result, msg: 'actualizado con exito'});
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDepartamentoDto: UpdateDepartamentoDto) {
-    return this.departamentosService.update(+id, updateDepartamentoDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.departamentosService.remove(+id);
-  }
+ 
 }

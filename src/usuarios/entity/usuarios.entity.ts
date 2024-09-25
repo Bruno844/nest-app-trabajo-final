@@ -5,6 +5,11 @@ import { ParcelaEntity } from "src/sistema-reserva/parcelas/entities/parcela.ent
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 
+export enum RoleStatus {
+    ADMIN = 'ADMIN',
+    USER = 'USER'
+}
+
 @Entity('usuarios')
 export class Usuarios {
 
@@ -42,6 +47,21 @@ export class Usuarios {
 
     @Column({type: 'varchar',nullable: false,length:255})
     avatar:string;
+
+    @Column({
+        type: 'uuid',
+        nullable: false,
+        unique: true,
+        generated: 'uuid'
+    })
+    codigoUnico: string;
+
+    @Column({
+       type: 'enum',
+       enum: RoleStatus,
+       default: RoleStatus.USER
+    })
+    role: RoleStatus;
 
 
    @OneToMany(

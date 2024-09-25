@@ -105,6 +105,24 @@ export class ParcelasService {
     }
   }
 
+  async marcaSalidaParcela(id:number){
+    try {
+      const parcelaId = await this.parcela.findOne({
+        where: {id}
+      });
+      if(!parcelaId){
+        throw new NotFoundException('no encontramos parcela con ese id')
+      };
+      return await this.parcela.update(parcelaId, {estado: ParcelaStatus.LIBRE})
+      
+    } catch (err) {
+      console.error(err);
+      if (err instanceof QueryFailedError)
+        throw new HttpException(`${ err.name } ${ err.driverError }`, 404);
+      throw new HttpException(err.message, err.status);
+    }
+  }
+
 
 
 

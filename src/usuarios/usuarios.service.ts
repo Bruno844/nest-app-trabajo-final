@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Usuarios } from './entity/usuarios.entity';
+import { RoleStatus, Usuarios } from './entity/usuarios.entity';
 import { QueryFailedError, Repository } from 'typeorm';
 import { UsuarioDto } from './dto/usuarios.dto';
 import { AuthService } from './auth/auth.service';
@@ -15,15 +15,15 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export class UsuariosService {
 
     constructor(
-        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>,private authService:AuthService,
+        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>,private readonly authService:AuthService,
         private jwtService: JwtService
     ){}
 
 
-    private getJwtToken(payload: JwtPayload){
-        const token = this.jwtService.sign(payload);
-        return token;
-    }
+    // private getJwtToken(payload: JwtPayload){
+    //     const token = this.jwtService.sign(payload);
+    //     return token;
+    // }
 
 
     //funcion para registrar un usuario
@@ -57,7 +57,7 @@ export class UsuariosService {
         //obtenemos el usuario por su email y pass
         const user = await this.usuario.findOne({
             where: {email},
-            select: {email:true, password: true, id: true}
+            select: {email:true, password: true, id: true, role: true,nombre: true}
         })
 
 
@@ -72,10 +72,9 @@ export class UsuariosService {
         }
 
         //retorna si todo sale ok
-        return {
-            ...user,
-            token: this.getJwtToken({...user})
-        }
+        const token = await this.authService.generateToken(user);
+
+        return token;
 
     }
 
@@ -116,8 +115,23 @@ export class UsuariosService {
      * @param id id del usuario
      * @returns usuarioDto(toda la data)
      */
-    async getUsuarioById(id:number){
+    async getUsuarioById(id:number, token?: string){
         try {
+            
+            //*verificamos el token pedido por el header
+            const decodedUser = await this.authService.verifyJwt(token);
+            console.log(decodedUser);
+
+            //*aca extraemos de ese decodedUser, el rol de la persona que tiene asignado ese token
+            const role = decodedUser.role;
+
+            //*comparamos si ese rol es igual a USER
+            if(role === RoleStatus.USER){
+                throw new UnauthorizedException(`no se puede hacer peticiones con rol de ${role}`)
+            }
+
+            // if(!esValido)  new UnauthorizedException('Rol no valido')
+
             const usuario = await this.usuario.findOne(
                 {where:{id}}
             )
@@ -131,6 +145,27 @@ export class UsuariosService {
             throw new HttpException(error.message, error.status);
         }
     }
+
+    // async verificarRole(roles: string[]){
+    //     try {
+    //         // const decodedUser = await this.authService.verifyJwt(token);
+    //         // const usuario = await this.getUsuarioById(decodedUser.sub);
+    //         // const roleUser = await this.usuario.findOne({
+    //         //     where: {role: roles}
+    //         // })
+
+    //         // console.log(usuario)
+    //         // return decodedUser;
+           
+            
+
+            
+            
+    //     } catch (error) {
+    //         console.log(error)
+    //         throw new UnauthorizedException('token no valido')
+    //     }
+    // }
 
     async updateUser(
         id: number,
@@ -167,6 +202,19 @@ export class UsuariosService {
         const userId = await this.getUsuarioById(+id);
 
         return await this.usuario.remove(userId);  
+    }
+
+    async findOneByEmail(email: string){
+        try {
+            const usuarioEmail = await this.usuario.findOneBy({email});
+            if(!usuarioEmail){
+                return new NotFoundException(`email ${email} no encontrado`)
+            }
+            
+        } catch (error) {
+            console.error(error);
+            return new BadRequestException('error en la busqueda')
+        }
     }
 
 }

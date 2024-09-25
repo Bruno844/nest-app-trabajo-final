@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateDepartamentoDto } from './dto/create-departamento.dto';
 import { UpdateDepartamentoDto } from './dto/update-departamento.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { DepartamentoEntity } from './entities/departamento.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class DepartamentosService {
-  create(createDepartamentoDto: CreateDepartamentoDto) {
-    return 'This action adds a new departamento';
+ 
+  constructor(
+    @InjectRepository(DepartamentoEntity) private readonly departamentoRepository: Repository<CreateDepartamentoDto>
+  ){}
+
+
+  async registrarDepartamento(departamentoDto: CreateDepartamentoDto){
+
+    try {
+
+      const departamento = await this.departamentoRepository.save(departamentoDto);
+
+      return departamento;
+      
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(HttpStatus.BAD_REQUEST, 'error a la hora de crear un departamento')
+    }
+
   }
 
-  findAll() {
-    return `This action returns all departamentos`;
-  }
+  async editarDepartamento(id:number,updateDeptoDto: UpdateDepartamentoDto){
 
-  findOne(id: number) {
-    return `This action returns a #${id} departamento`;
-  }
+    try {
 
-  update(id: number, updateDepartamentoDto: UpdateDepartamentoDto) {
-    return `This action updates a #${id} departamento`;
-  }
+      const idDepto = await this.departamentoRepository.findOne({
+        where: {id: id}
+      });
 
-  remove(id: number) {
-    return `This action removes a #${id} departamento`;
-  }
+      if(!idDepto){
+        throw new BadRequestException('no existe departamento con ese id')
+      };
+
+      const updateDepto = await this.departamentoRepository.update(idDepto, updateDeptoDto);
+      
+      return updateDepto;
+
+    } catch (error) {
+      console.error(error);
+      throw new HttpException('error en actualizar', HttpStatus.BAD_REQUEST)
+    }
+
+  } 
+
+
 }

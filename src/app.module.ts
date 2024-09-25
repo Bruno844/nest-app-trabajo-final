@@ -15,6 +15,7 @@ import { DepartamentosModule } from './sistema-reserva/departamentos/departament
 import { IngresosModule } from './sistema-reserva/ingresos/ingresos.module';
 import { SistemaReservaModule } from './sistema-reserva/sistema-reserva.module';
 import path from 'path';
+import { UsuariosService } from './usuarios/usuarios.service';
 
 @Module({
   imports: [
@@ -49,6 +50,26 @@ export class AppModule implements NestModule {
       {
         path: '/usuarios/all',
         method: RequestMethod.GET
+      },
+      {
+        path: '/usuarios/:id',
+        method:RequestMethod.GET
+      },
+      {
+        path: '/departamentos/new-depto',
+        method: RequestMethod.POST
+      },
+      {
+        path: '/departamentos/:id/update',
+        method:RequestMethod.PATCH
+      },
+      {
+        path: '/reservas/new-reserva',
+        method: RequestMethod.POST
+      },
+      {
+        path: '/reservas/:id/update-reserva',
+        method: RequestMethod.POST
       }
     ).forRoutes('');
   }

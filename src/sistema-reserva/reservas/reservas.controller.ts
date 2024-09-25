@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
+import { Response } from 'express';
 
 @Controller('reservas')
 export class ReservasController {
   constructor(private readonly reservasService: ReservasService) {}
 
-  @Post()
-  create(@Body() createReservaDto: CreateReservaDto) {
-    return this.reservasService.create(createReservaDto);
+
+  @Post('/new-reserva')
+  async createReserva(
+    @Body('usuarioId') usuarioId: number,
+    @Body('deptoId') deptoId: number,
+    @Body('fechaSalida') fechaSalida: Date,
+    @Res() response: Response
+  ){
+    const result = await this.reservasService.registerReserva(usuarioId,deptoId,fechaSalida);
+    response.status(HttpStatus.CREATED).json({result,msg:'creado con exito'})
   }
 
-  @Get()
-  findAll() {
-    return this.reservasService.findAll();
+  @Post(':id/update-reserva')
+  async compareReserva(
+    @Body() reservaDto: Partial<CreateReservaDto>,
+    @Param('id') id:number,
+    @Res() response: Response
+  ){
+    const result = await this.reservasService.compareStatusReserva(id, reservaDto);
+    response.status(HttpStatus.CREATED).json({result,msg:'creado con exito'})
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.reservasService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReservaDto: UpdateReservaDto) {
-    return this.reservasService.update(+id, updateReservaDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.reservasService.remove(+id);
-  }
 }

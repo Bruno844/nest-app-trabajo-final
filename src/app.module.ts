@@ -70,6 +70,10 @@ export class AppModule implements NestModule {
       {
         path: '/reservas/:id/update-reserva',
         method: RequestMethod.POST
+      },
+      {
+        path: '/reservas/:id/change-estado',
+        method: RequestMethod.PATCH
       }
     ).forRoutes('');
   }

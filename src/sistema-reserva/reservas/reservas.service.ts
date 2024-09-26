@@ -5,9 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DepartamentoEntity } from '../departamentos/entities/departamento.entity';
 import { Repository } from 'typeorm';
 import { ReservaEntity, ReservaStatus } from './entities/reserva.entity';
-import { Usuarios } from 'src/usuarios/entity/usuarios.entity';
+import { RoleStatus, Usuarios } from 'src/usuarios/entity/usuarios.entity';
 import { UsuarioDto } from 'src/usuarios/dto/usuarios.dto';
 import { ParcelaStatus } from '../parcelas/entities/parcela.entity';
+import { AuthService } from 'src/usuarios/auth/auth.service';
 
 @Injectable()
 export class ReservasService {
@@ -15,7 +16,8 @@ export class ReservasService {
   constructor(
     @InjectRepository(DepartamentoEntity) private readonly departamentoRepository: Repository<CreateReservaDto>,
     @InjectRepository(ReservaEntity) private readonly reservaRepository: Repository<CreateReservaDto>,
-    @InjectRepository(Usuarios) private readonly usuarioRepository: Repository<UsuarioDto>
+    @InjectRepository(Usuarios) private readonly usuarioRepository: Repository<UsuarioDto>,
+    private readonly authService: AuthService
   ){}
 
 
@@ -119,6 +121,49 @@ export class ReservasService {
       console.log(error)
       const httpStatus = HttpStatus.INTERNAL_SERVER_ERROR
       throw new HttpException('no trajo los datos necesarios', httpStatus)
+    }
+
+  }
+
+
+  async updateStatusReserva(idReserva: number, token?: string, reservaEstatus?: Partial<CreateReservaDto>){
+
+    try {
+
+      //*verificamos el token que le pasamos por el header
+      const decodedUser = await this.authService.verifyJwt(token);
+      console.log(decodedUser)
+
+      //*extraemos el role del usuario que tiene el token en el header
+      const role = decodedUser.role;
+
+      //*comparamos si es ADMIN para aprobar la reserva o no
+      if(role === RoleStatus.USER){
+        return new UnauthorizedException('no estas permitido para aprobar una reserva,por que no tenes un rol de ADMIN')
+      }else{
+        const reserva = await this.reservaRepository.findOne({
+          where: {id:idReserva}
+        });
+  
+        if(!reserva){
+          return new BadRequestException('no existe una reserva con ese id')
+
+        }
+
+        // if(reservaEstatus.estado !== ParcelaStatus.APROBADA || ParcelaStatus.DESAPROBADA){
+        //   return new UnauthorizedException('pone bien el estado')
+        // }
+        const update = await this.reservaRepository.update(reserva, reservaEstatus);
+
+
+        if(!update) return;
+
+        if(update) return {msg:` actualizado con exito a ${reservaEstatus.estado}!`};
+      }
+      
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException('error a la hora de registrarse')
     }
 
   }

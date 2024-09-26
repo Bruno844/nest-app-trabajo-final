@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus, ParseIntPipe, Headers } from '@nestjs/common';
 import { ReservasService } from './reservas.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
@@ -30,4 +30,21 @@ export class ReservasController {
     response.status(HttpStatus.CREATED).json({result,msg:'creado con exito'})
   }
 
+
+  @Patch(':id/change-estado')
+  async changeEstado(
+    @Param('id',ParseIntPipe) id: string,
+    @Headers('Authorization') authorization: string,
+    @Body() estado: Partial<CreateReservaDto>
+  ){
+
+    try {
+      const result = await this.reservasService.updateStatusReserva(+id,authorization,estado)
+      return result;
+    } catch (error) {
+      console.log(error)
+      return null;
+    }
+   
+  }
 }

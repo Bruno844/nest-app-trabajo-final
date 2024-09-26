@@ -1,7 +1,9 @@
 import { ParcelaStatus } from "../entities/parcela.entity";
 
-export const ParcelaStatusList = [
-    ParcelaStatus.LIBRE,
-    ParcelaStatus.OCUPADA,
-    ParcelaStatus.PENDIENTE
-]
+export enum ParcelaStatusList  {
+   LIBRE ='LIBRE',
+   APROBADA = 'APROBADA',
+   DESAPROBADA = 'DESAPROBADA',
+   OCUPADA = 'OCUPADA',
+   PENDIENTE = 'PENDIENTE'
+}

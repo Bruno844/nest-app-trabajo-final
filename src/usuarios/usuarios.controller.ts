@@ -11,6 +11,7 @@ import { Roles } from './auth/decorators/roles.decorator';
 import { RolesGuard } from './auth/guard/roles.guard';
 import { RoleStatusList } from './auth/enum/role.enum';
 import { Auth } from './auth/decorators/auth.decorator';
+import { MessagePattern } from '@nestjs/microservices';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -34,6 +35,11 @@ export class UsuariosController {
     @Get('/all')
     allUsuarios(@Query() paginationDto: PaginationDto){
         return this.usuarioService.getAllUsuarios(paginationDto)
+    }
+
+    @MessagePattern('createMail')
+    send(){
+        return this.usuarioService.sendMail()
     }
 
 

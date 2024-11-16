@@ -47,4 +47,11 @@ export class ReservasController {
     }
    
   }
+
+
+  @Get('/all-reservas')
+  async getAll(){
+    const res = await this.reservasService.getReservas();
+    return res;
+  }
 }

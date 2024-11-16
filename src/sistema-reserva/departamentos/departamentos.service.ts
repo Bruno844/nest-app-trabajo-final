@@ -49,7 +49,20 @@ export class DepartamentosService {
       throw new HttpException('error en actualizar', HttpStatus.BAD_REQUEST)
     }
 
-  } 
+  }
+
+  async getAllDepartamentos(){
+
+    try {
+
+      const getdept = await this.departamentoRepository.find();
+
+      return getdept;
+      
+    } catch (error) { 
+        console.log(error)
+    }
+  }
 
 
 }

@@ -9,6 +9,7 @@ import { RoleStatus, Usuarios } from 'src/usuarios/entity/usuarios.entity';
 import { UsuarioDto } from 'src/usuarios/dto/usuarios.dto';
 import { ParcelaStatus } from '../parcelas/entities/parcela.entity';
 import { AuthService } from 'src/usuarios/auth/auth.service';
+import { CreateDepartamentoDto } from '../departamentos/dto/create-departamento.dto';
 
 @Injectable()
 export class ReservasService {
@@ -166,6 +167,25 @@ export class ReservasService {
       throw new BadRequestException('error a la hora de registrarse')
     }
 
+  }
+
+  async getReservas(){
+
+   
+
+    try {
+
+      const result = await this.reservaRepository.find({
+        relations: ['departamento','usuario'],
+        // select: ['departamento']
+        
+      });
+
+      return result;
+      
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 

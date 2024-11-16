@@ -64,6 +64,10 @@ export class AppModule implements NestModule {
         method:RequestMethod.PATCH
       },
       {
+        path: 'departamentos/all',
+        method: RequestMethod.GET
+      },
+      {
         path: '/reservas/new-reserva',
         method: RequestMethod.POST
       },
@@ -74,6 +78,14 @@ export class AppModule implements NestModule {
       {
         path: '/reservas/:id/change-estado',
         method: RequestMethod.PATCH
+      },
+      {
+        path: '/reservas/all-reservas',
+        method: RequestMethod.GET
+      },
+      {
+        path: '/parcelas/all',
+        method: RequestMethod.GET
       }
     ).forRoutes('');
   }

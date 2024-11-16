@@ -27,5 +27,13 @@ export class DepartamentosController {
     const result = await this.departamentosService.editarDepartamento(id, updateDeptoDto);
     response.status(HttpStatus.OK).json({result, msg: 'actualizado con exito'});
   }
+
+
+  @Get('/all')
+  async getAll(){
+    const result = await this.departamentosService.getAllDepartamentos();
+    return result;
+
+  }
  
 }

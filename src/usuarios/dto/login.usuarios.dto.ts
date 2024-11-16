@@ -10,8 +10,6 @@ export class LoginUsuarioDto {
 
 
     @IsString()
-    @MinLength(6)
-    @MaxLength(50)
     password:string;
 
 

@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleStatus, Usuarios } from './entity/usuarios.entity';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -9,15 +9,17 @@ import * as bcrypt from 'bcrypt';
 import { JwtPayload } from './auth/interfaces/jwt-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { ClientProxy } from '@nestjs/microservices';
 
 
 @Injectable()
 export class UsuariosService {
 
     constructor(
-        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>,private readonly authService:AuthService,
+        @Inject('MAILER') private readonly proxy: ClientProxy,
+        @InjectRepository(Usuarios) private readonly usuario: Repository<UsuarioDto>, private readonly authService: AuthService,
         private jwtService: JwtService
-    ){}
+    ) { }
 
 
     // private getJwtToken(payload: JwtPayload){
@@ -26,12 +28,37 @@ export class UsuariosService {
     // }
 
 
+    //*funcion de prueba mailer
+    sendMail() {
+
+        try {
+
+            this.proxy
+                .emit('createMail', 'este es un payload desde el gatweay')
+                .subscribe((data) => {
+                    console.log(data)
+                });
+            this.proxy
+                .send('createMail', 'probamos si el gateway nos devuelve informacion')
+                .subscribe((data) => {
+                    console.log(data)
+                })
+
+        } catch (error) {
+            console.log(error)
+        }
+
+        return 'hola meail'
+
+    }
+
+
     //funcion para registrar un usuario
-    async registerUser(usuarioDto: UsuarioDto){
+    async registerUser(usuarioDto: UsuarioDto) {
         try {
 
             //si no tiene contra, error
-            if(!usuarioDto.password) throw new UnauthorizedException('not password provided');
+            if (!usuarioDto.password) throw new UnauthorizedException('not password provided');
 
             //hasheo de la constraseña
             const hash = await this.authService.hashPassword(usuarioDto.password);
@@ -40,11 +67,11 @@ export class UsuariosService {
             //almacenamos en db
             const result = await this.usuario.save(usuarioDto);
             return result;
-            
+
         } catch (error: any) {
             console.error(error);
             throw new HttpException(`${error.name}`, HttpStatus.NOT_FOUND)
-            
+
         }
     }
 
@@ -52,22 +79,22 @@ export class UsuariosService {
     //funcion para iniciar sesion del usuario
     async loginUser(loginUsuarioDto: LoginUsuarioDto) {
 
-        const {password, email} = loginUsuarioDto;
+        const { password, email } = loginUsuarioDto;
 
         //obtenemos el usuario por su email y pass
         const user = await this.usuario.findOne({
-            where: {email},
-            select: {email:true, password: true, id: true, role: true,nombre: true}
+            where: { email },
+            select: { email: true, password: true, id: true, role: true, nombre: true }
         })
 
 
         //nos fijamos si trae o no el usuario
-        if(!user){
+        if (!user) {
             throw new UnauthorizedException('credenciales no validas')
         }
 
         //comparamos la contra del usuario con la que esta en la base de datos
-        if(!bcrypt.compareSync(password, user.password)){
+        if (!bcrypt.compareSync(password, user.password)) {
             throw new UnauthorizedException('password no valida')
         }
 
@@ -78,7 +105,7 @@ export class UsuariosService {
 
     }
 
-    
+
 
 
     //*------------------SECCION CRUD--------------------------------//
@@ -86,9 +113,9 @@ export class UsuariosService {
 
 
     //funcion para retornar todos los usuarios
-    async getAllUsuarios(paginationDto: PaginationDto){
+    async getAllUsuarios(paginationDto: PaginationDto) {
 
-        const {limit = 5, offset = 0} = paginationDto
+        const { limit = 5, offset = 0 } = paginationDto
 
         try {
 
@@ -98,7 +125,7 @@ export class UsuariosService {
             })
 
             return users;
-            
+
         } catch (error) {
             console.log(error)
             const httpStatus = HttpStatus.INTERNAL_SERVER_ERROR
@@ -115,9 +142,9 @@ export class UsuariosService {
      * @param id id del usuario
      * @returns usuarioDto(toda la data)
      */
-    async getUsuarioById(id:number, token?: string){
+    async getUsuarioById(id: number, token?: string) {
         try {
-            
+
             //*verificamos el token pedido por el header
             const decodedUser = await this.authService.verifyJwt(token);
             console.log(decodedUser);
@@ -126,20 +153,20 @@ export class UsuariosService {
             const role = decodedUser.role;
 
             //*comparamos si ese rol es igual a USER
-            if(role === RoleStatus.USER){
+            if (role === RoleStatus.USER) {
                 throw new UnauthorizedException(`no se puede hacer peticiones con rol de ${role}`)
             }
 
             // if(!esValido)  new UnauthorizedException('Rol no valido')
 
             const usuario = await this.usuario.findOne(
-                {where:{id}}
+                { where: { id } }
             )
 
-            if(!usuario) throw new NotFoundException('usuario no encontrado')
+            if (!usuario) throw new NotFoundException('usuario no encontrado')
 
             return usuario;
-            
+
         } catch (error) {
             console.error(error);
             throw new HttpException(error.message, error.status);
@@ -156,11 +183,11 @@ export class UsuariosService {
 
     //         // console.log(usuario)
     //         // return decodedUser;
-           
-            
 
-            
-            
+
+
+
+
     //     } catch (error) {
     //         console.log(error)
     //         throw new UnauthorizedException('token no valido')
@@ -175,7 +202,7 @@ export class UsuariosService {
 
         try {
             //comprobamos que al menos se subio 1 archivo, si es asi, le asignamos a ña 1ra posicion con su nombre
-            if(files.length > 0){
+            if (files.length > 0) {
                 user.avatar = files[0].filename;
             }
             const oldUser = await this.getUsuarioById(id);
@@ -185,12 +212,12 @@ export class UsuariosService {
             const result = await this.usuario.save(mergeUser);
 
             return result;
-            
+
         } catch (err) {
             console.error(err);
-            if(err instanceof QueryFailedError)
+            if (err instanceof QueryFailedError)
                 throw new HttpException(`${err.name} ${err.driverError}`, 404);
-            throw new HttpException(err.message,err.status);
+            throw new HttpException(err.message, err.status);
         }
 
 
@@ -198,19 +225,19 @@ export class UsuariosService {
 
 
     //funcion para eliminar un usuario
-    async removeUsuario(id:string) {
+    async removeUsuario(id: string) {
         const userId = await this.getUsuarioById(+id);
 
-        return await this.usuario.remove(userId);  
+        return await this.usuario.remove(userId);
     }
 
-    async findOneByEmail(email: string){
+    async findOneByEmail(email: string) {
         try {
-            const usuarioEmail = await this.usuario.findOneBy({email});
-            if(!usuarioEmail){
+            const usuarioEmail = await this.usuario.findOneBy({ email });
+            if (!usuarioEmail) {
                 return new NotFoundException(`email ${email} no encontrado`)
             }
-            
+
         } catch (error) {
             console.error(error);
             return new BadRequestException('error en la busqueda')
